@@ -14,7 +14,7 @@ def connect_database():
 
 
 def get_data():
-    ...
+    return requests.get('https://github.com/timeline.json')
 
 
 def insert_data(data):
