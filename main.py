@@ -4,13 +4,18 @@ from py2neo import Graph, Node
 
 
 def main():
-    connect_database()
+    connection = connect_database()
     data = get_data()
     insert_data(data)
 
 
 def connect_database():
-    ...
+    return Graph(
+        host='localhost',
+        port=7687,
+        password='',
+        database=''
+    )
 
 
 def get_data():
