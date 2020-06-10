@@ -1,4 +1,4 @@
-from translation import google
+from translate import Translator
 import requests
 from py2neo import Graph, Node
 
@@ -6,7 +6,7 @@ from py2neo import Graph, Node
 def main():
     connection = connect_database()
     data = get_data()
-    insert_data(data)
+    insert_data(connection, data)
 
 
 def connect_database():
@@ -24,6 +24,10 @@ def get_data():
 
 def insert_data(data):
     ...
+
+
+def tranlate_data(data):
+    return Translator(to_lang="pt").translator.translate(data)
 
 
 if __name__ == "__main__":
