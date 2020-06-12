@@ -3,14 +3,21 @@ from py2neo import Graph, Node
 from time import time
 import json
 import re
+from multiprocessing import Pool
+import functools
 
 
 def main():
+    pool = Pool(4)
     t1 = time()
-    connection = connect_database()
     dataset = get_data(
         'https://world.openfoodfacts.org/ingredients.json')["tags"]
-    insert_data(connection, dataset, "Ingredient", "name")
+
+    with Pool(processes=4) as pool:
+        nargs = [n for n in dataset]
+        print(nargs[0])
+        pool.map(insert_data, nargs)
+
     print("Execution Time: ", time() - t1)
 
 
@@ -28,20 +35,20 @@ def get_data(url, type_request="GET", headers={}, querystring={}):
     return json.loads(response.text)
 
 
-def insert_data(connection, dataset, label, attribute):
-    for data in dataset:
+def insert_data(data):
+    label = "Ingredient"
+    attribute = "name"
+    translated_data, english = translate_data(data[attribute])
 
-        translated_data, english = translate_data(data[attribute])
+    if translate_data != " ":
+        ingredient = Node(label, name=translated_data, english=english) if english == True else Node(
+            label, name=translated_data)
+        ingredient.__primarylabel__ = label
+        ingredient.__primarykey__ = attribute
 
-        if translate_data != " ":
-            ingredient = Node(label, name=translated_data, english=english) if english == True else Node(
-                label, name=translated_data)
-            ingredient.__primarylabel__ = label
-            ingredient.__primarykey__ = attribute
+        connect_database().merge(ingredient)
 
-            connection.merge(ingredient)
-
-            print(translated_data)
+        print(translated_data)
 
 
 def translate_data(data):
