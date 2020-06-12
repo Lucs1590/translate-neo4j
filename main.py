@@ -3,6 +3,7 @@ import requests
 from py2neo import Graph, Node
 from time import time
 import json
+import re
 
 
 def main():
@@ -27,7 +28,7 @@ def get_data():
 
 def insert_data(connection, dataset, label, attribute):
     for data in dataset:
-        translated_data = translate_data(data[attribute]).lower()
+        translated_data = filter_data(translate_data(data[attribute]).lower())
 
         ingredient = Node(label, name=translated_data)
         ingredient.__primarylabel__ = label
@@ -40,6 +41,11 @@ def insert_data(connection, dataset, label, attribute):
 
 def translate_data(data):
     return Translator().translate(str(data), dest="pt").text
+
+
+def filter_data(data):
+    re_validation = re.findall(r"[a-zA-Z][^0-9]\w*", data, re.IGNORECASE)
+    return " ".join(re_validation)
 
 
 if __name__ == "__main__":
