@@ -1,4 +1,3 @@
-from googletrans import Translator
 import requests
 from py2neo import Graph, Node
 from time import time
@@ -23,16 +22,20 @@ def connect_database():
     )
 
 
-def get_data(url):
-    return json.loads(requests.get(url).text)
+def get_data(url, type_request="GET", headers={}, querystring={}):
+    response = requests.request(
+        type_request, url, headers=headers, params=querystring)
+    return json.loads(response.text)
 
 
 def insert_data(connection, dataset, label, attribute):
     for data in dataset:
-        translated_data = filter_data(translate_data(data[attribute]).lower())
 
-        if translate_data:
-            ingredient = Node(label, name=translated_data)
+        translated_data, english = translate_data(data[attribute])
+
+        if translate_data != " ":
+            ingredient = Node(label, name=translated_data, english=english) if english == True else Node(
+                label, name=translated_data)
             ingredient.__primarylabel__ = label
             ingredient.__primarykey__ = attribute
 
@@ -42,14 +45,24 @@ def insert_data(connection, dataset, label, attribute):
 
 
 def translate_data(data):
-
-    return Translator().translate(str(data), dest="pt").text
+    data = filter_data(data)
+    url = "https://systran-systran-platform-for-language-processing-v1.p.rapidapi.com/translation/text/translate"
+    querystring = {"source": "en", "target": "pt", "input": data}
+    headers = {
+        'x-rapidapi-host': "systran-systran-platform-for-language-processing-v1.p.rapidapi.com",
+        'x-rapidapi-key': "b2448ece4bmsh2e999bf748c5de3p1b0cb4jsn39b94190ee41"
+    }
+    translated_data = get_data(url, "GET", headers, querystring)
+    try:
+        return str(translated_data["outputs"][0]["output"]).lower(), False
+    except:
+        return data.replace("%20", " "), True
 
 
 def filter_data(data):
     re_validation = re.findall(
         r"[a-zA-Záàâãéèêíïóôõöúçñ][^0-9]\w*", data, re.IGNORECASE)
-    return "%20".join(re_validation)
+    return " ".join(re_validation).lower()
 
 
 if __name__ == "__main__":
