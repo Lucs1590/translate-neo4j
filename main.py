@@ -44,7 +44,8 @@ def translate_data(data):
 
 
 def filter_data(data):
-    re_validation = re.findall(r"[a-zA-Z][^0-9]\w*", data, re.IGNORECASE)
+    re_validation = re.findall(
+        r"[a-zA-Záàâãéèêíïóôõöúçñ][^0-9]\w*", data, re.IGNORECASE)
     return " ".join(re_validation)
 
 
