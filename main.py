@@ -30,13 +30,14 @@ def insert_data(connection, dataset, label, attribute):
     for data in dataset:
         translated_data = filter_data(translate_data(data[attribute]).lower())
 
-        ingredient = Node(label, name=translated_data)
-        ingredient.__primarylabel__ = label
-        ingredient.__primarykey__ = attribute
+        if translate_data:
+            ingredient = Node(label, name=translated_data)
+            ingredient.__primarylabel__ = label
+            ingredient.__primarykey__ = attribute
 
-        connection.merge(ingredient)
+            connection.merge(ingredient)
 
-        print(translated_data)
+            print(translated_data)
 
 
 def translate_data(data):
