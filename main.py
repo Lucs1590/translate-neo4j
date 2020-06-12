@@ -1,4 +1,4 @@
-from translate import Translator
+from googletrans import Translator
 import requests
 from py2neo import Graph, Node
 from time import time
@@ -10,7 +10,7 @@ def main():
     connection = connect_database()
     dataset = get_data()["tags"]
     insert_data(connection, dataset, "Ingredient", "name")
-    print(time() - t1)
+    print("Execution Time: ", time() - t1)
 
 
 def connect_database():
@@ -27,7 +27,7 @@ def get_data():
 
 def insert_data(connection, dataset, label, attribute):
     for data in dataset:
-        translated_data = translate_data(data["name"]).lower()
+        translated_data = translate_data(data[attribute]).lower()
 
         ingredient = Node(label, name=translated_data)
         ingredient.__primarylabel__ = label
@@ -39,7 +39,7 @@ def insert_data(connection, dataset, label, attribute):
 
 
 def translate_data(data):
-    return Translator(to_lang="pt").translate(data)
+    return Translator().translate(str(data), dest="pt").text
 
 
 if __name__ == "__main__":
