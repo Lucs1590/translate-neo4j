@@ -9,7 +9,8 @@ import re
 def main():
     t1 = time()
     connection = connect_database()
-    dataset = get_data()["tags"]
+    dataset = get_data(
+        'https://world.openfoodfacts.org/ingredients.json')["tags"]
     insert_data(connection, dataset, "Ingredient", "name")
     print("Execution Time: ", time() - t1)
 
@@ -22,8 +23,8 @@ def connect_database():
     )
 
 
-def get_data():
-    return json.loads(requests.get('https://world.openfoodfacts.org/ingredients.json').text)
+def get_data(url):
+    return json.loads(requests.get(url).text)
 
 
 def insert_data(connection, dataset, label, attribute):
@@ -41,13 +42,14 @@ def insert_data(connection, dataset, label, attribute):
 
 
 def translate_data(data):
+
     return Translator().translate(str(data), dest="pt").text
 
 
 def filter_data(data):
     re_validation = re.findall(
         r"[a-zA-Záàâãéèêíïóôõöúçñ][^0-9]\w*", data, re.IGNORECASE)
-    return " ".join(re_validation)
+    return "%20".join(re_validation)
 
 
 if __name__ == "__main__":
